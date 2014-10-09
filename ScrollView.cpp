@@ -246,18 +246,22 @@ void MScrollView::VScroll(int nSB_, int nPos)
 ////////////////////////////////////////////////////////////////////////////
 
 #ifdef UNITTEST
-    HINSTANCE xg_hInstance = NULL;
-    HWND xg_hMainWnd = NULL;
-    MScrollView xg_sv;
-    std::vector<HWND> xg_ahwndCtrls;
+    HINSTANCE g_hInstance = NULL;
+    HWND g_hMainWnd = NULL;
+    MScrollView g_sv;
+    std::vector<HWND> g_ahwndCtrls;
     const int c_nCtrls = 100;
     const int c_height = 25;
+    bool g_bInited = false;
 
     static const TCHAR s_szName[] = TEXT("MZC3 ScrollView Test");
 
     void OnSize(HWND hWnd)
     {
-        xg_sv.clear();
+        if (!g_bInited)
+            return;
+
+        g_sv.clear();
 
         MRect rcClient;
         ::GetClientRect(hWnd, &rcClient);
@@ -266,17 +270,17 @@ void MScrollView::VScroll(int nSB_, int nPos)
         {
             MRect rcCtrl(MPoint(0, c_height * i),
                          MSize(rcClient.Width(), c_height));
-            xg_sv.AddCtrlInfo(xg_ahwndCtrls[i], rcCtrl);
+            g_sv.AddCtrlInfo(g_ahwndCtrls[i], rcCtrl);
         }
 
-        xg_sv.EnsureAllVisible();
-        xg_sv.UpdateAll();
+        g_sv.EnsureAllVisible();
+        g_sv.UpdateAll();
     }
 
     BOOL OnCreate(HWND hWnd)
     {
-        xg_sv.SetParent(hWnd);
-        xg_sv.ShowParentScrollBars(FALSE, TRUE);
+        g_sv.SetParent(hWnd);
+        g_sv.ShowParentScrollBars(FALSE, TRUE);
 
         HWND hwndCtrl;
 
@@ -290,14 +294,14 @@ void MScrollView::VScroll(int nSB_, int nPos)
                     WS_EX_CLIENTEDGE,
                     TEXT("EDIT"), sz,
                     WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL,
-                    0, 0, 0, 0, hWnd, NULL, xg_hInstance, NULL);
+                    0, 0, 0, 0, hWnd, NULL, g_hInstance, NULL);
             #else
                 // button
                 hwndCtrl = ::CreateWindowEx(
                     0,
                     TEXT("BUTTON"), sz,
                     WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_TEXT | BS_CENTER | BS_VCENTER,
-                    0, 0, 0, 0, hWnd, NULL, xg_hInstance, NULL);
+                    0, 0, 0, 0, hWnd, NULL, g_hInstance, NULL);
             #endif
             if (hwndCtrl == NULL)
                 return FALSE;
@@ -305,8 +309,10 @@ void MScrollView::VScroll(int nSB_, int nPos)
             ::SendMessage(hwndCtrl, WM_SETFONT,
                 reinterpret_cast<WPARAM>(::GetStockObject(DEFAULT_GUI_FONT)),
                 FALSE);
-            xg_ahwndCtrls.emplace_back(hwndCtrl);
+            g_ahwndCtrls.emplace_back(hwndCtrl);
         }
+
+        g_bInited = true;
         OnSize(hWnd);
 
         return TRUE;
@@ -316,7 +322,7 @@ void MScrollView::VScroll(int nSB_, int nPos)
     {
         for (int i = 0; i < c_nCtrls; ++i)
         {
-            ::DestroyWindow(xg_ahwndCtrls[i]);
+            ::DestroyWindow(g_ahwndCtrls[i]);
         }
         ::PostQuitMessage(0);
     }
@@ -338,11 +344,11 @@ void MScrollView::VScroll(int nSB_, int nPos)
             break;
 
         case WM_HSCROLL:
-            xg_sv.HScroll(LOWORD(wParam), HIWORD(wParam));
+            g_sv.HScroll(LOWORD(wParam), HIWORD(wParam));
             break;
 
         case WM_VSCROLL:
-            xg_sv.VScroll(LOWORD(wParam), HIWORD(wParam));
+            g_sv.VScroll(LOWORD(wParam), HIWORD(wParam));
             break;
 
         default:
@@ -358,7 +364,7 @@ void MScrollView::VScroll(int nSB_, int nPos)
         LPSTR       lpCmdLine,
         int         nCmdShow)
     {
-        xg_hInstance = hInstance;
+        g_hInstance = hInstance;
 
         WNDCLASS wc;
         ZeroMemory(&wc, sizeof(wc));
@@ -375,17 +381,17 @@ void MScrollView::VScroll(int nSB_, int nPos)
             return 1;
         }
 
-        xg_hMainWnd = ::CreateWindow(s_szName, s_szName,
+        g_hMainWnd = ::CreateWindow(s_szName, s_szName,
             WS_OVERLAPPEDWINDOW,
             CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
             NULL, NULL, hInstance, NULL);
-        if (xg_hMainWnd == NULL)
+        if (g_hMainWnd == NULL)
         {
             return 2;
         }
 
-        ::ShowWindow(xg_hMainWnd, nCmdShow);
-        ::UpdateWindow(xg_hMainWnd);
+        ::ShowWindow(g_hMainWnd, nCmdShow);
+        ::UpdateWindow(g_hMainWnd);
 
         MSG msg;
         while (::GetMessage(&msg, NULL, 0, 0))
