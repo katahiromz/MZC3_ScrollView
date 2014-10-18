@@ -67,6 +67,8 @@ MZC_INLINE void MScrollView::AddCtrlInfo(HWND hwndCtrl, const MRect& rcCtrl)
 {
     assert(::IsWindow(hwndCtrl));
     assert(HasChildStyle(hwndCtrl));
+    assert(rcCtrl.left >= 0);
+    assert(rcCtrl.top >= 0);
     m_vecInfo.emplace_back(hwndCtrl, rcCtrl);
 }
 
@@ -75,6 +77,8 @@ MZC_INLINE void MScrollView::AddCtrlInfo(
 {
     assert(::IsWindow(hwndCtrl));
     assert(HasChildStyle(hwndCtrl));
+    assert(ptCtrl.x >= 0);
+    assert(ptCtrl.y >= 0);
     m_vecInfo.emplace_back(hwndCtrl, ptCtrl, sizCtrl);
 }
 

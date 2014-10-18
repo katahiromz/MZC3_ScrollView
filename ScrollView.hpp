@@ -68,8 +68,10 @@ public:
     // extent
           MSize& Extent();
     const MSize& Extent() const;
+    void SetExtentForAllCtrls();
+
+    // ensure visible
     void EnsureCtrlVisible(HWND hwndCtrl);
-    void EnsureAllVisible();
 
     // update
     void UpdateScrollInfo();

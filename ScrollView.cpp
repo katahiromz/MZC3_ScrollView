@@ -17,6 +17,8 @@ void MScrollView::SetCtrlInfo(HWND hwndCtrl, const MRect& rcCtrl)
 {
     assert(::IsWindow(hwndCtrl));
     assert(HasChildStyle(hwndCtrl));
+    assert(rcCtrl.left >= 0);
+    assert(rcCtrl.top >= 0);
     MScrollCtrlInfo* info = FindCtrlInfo(hwndCtrl);
     if (info)
         info->m_rcCtrl = rcCtrl;
@@ -24,10 +26,13 @@ void MScrollView::SetCtrlInfo(HWND hwndCtrl, const MRect& rcCtrl)
         AddCtrlInfo(hwndCtrl, rcCtrl);
 }
 
-void MScrollView::SetCtrlInfo(HWND hwndCtrl, const MPoint& ptCtrl, const MSize& sizCtrl)
+void MScrollView::SetCtrlInfo(
+    HWND hwndCtrl, const MPoint& ptCtrl, const MSize& sizCtrl)
 {
     assert(::IsWindow(hwndCtrl));
     assert(HasChildStyle(hwndCtrl));
+    assert(ptCtrl.x >= 0);
+    assert(ptCtrl.y >= 0);
     MScrollCtrlInfo* info = FindCtrlInfo(hwndCtrl);
     if (info)
         info->m_rcCtrl = MRect(ptCtrl, sizCtrl);
@@ -76,23 +81,36 @@ void MScrollView::RemoveCtrlInfo(HWND hwndCtrl)
     }
 }
 
+// ensure visible
 void MScrollView::EnsureCtrlVisible(HWND hwndCtrl)
 {
-    if (!::IsWindowVisible(hwndCtrl))
-        return;
+    MRect rcClient;
+    ::GetClientRect(m_hwndParent, &rcClient);
 
-    MScrollCtrlInfo* pInfo = FindCtrlInfo(hwndCtrl);
-    if (pInfo)
+    const int siz = static_cast<int>(size());
+    for (int i = 0; i < siz; ++i)
     {
-        MRect& rcCtrl = pInfo->m_rcCtrl;
-        if (Extent().cx < rcCtrl.right - 1)
-            Extent().cx = rcCtrl.right - 1;
-        if (Extent().cy < rcCtrl.bottom - 1)
-            Extent().cy = rcCtrl.bottom - 1;
+        if (m_vecInfo[i].m_hwndCtrl != hwndCtrl)
+            continue;
+
+        if (!::IsWindowVisible(hwndCtrl))
+            continue;
+
+        MRect& rcCtrl = m_vecInfo[i].m_rcCtrl;
+        if (rcCtrl.bottom > m_ptScrollPos.y + rcClient.Height())
+        {
+            m_ptScrollPos.y = rcCtrl.bottom - rcClient.Height();
+        }
+        if (rcCtrl.top < m_ptScrollPos.y)
+        {
+            m_ptScrollPos.y = rcCtrl.top;
+        }
+        UpdateAll();
+        break;
     }
 }
 
-void MScrollView::EnsureAllVisible()
+void MScrollView::SetExtentForAllCtrls()
 {
     Extent().cx = Extent().cy = 0;
     const int siz = static_cast<int>(size());
@@ -273,7 +291,7 @@ void MScrollView::VScroll(int nSB_, int nPos)
             g_sv.AddCtrlInfo(g_ahwndCtrls[i], rcCtrl);
         }
 
-        g_sv.EnsureAllVisible();
+        g_sv.SetExtentForAllCtrls();
         g_sv.UpdateAll();
     }
 
