@@ -1,20 +1,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include <windows.h>
+#include <windowsx.h>
 #include <cassert>
 #include <vector>
-
-////////////////////////////////////////////////////////////////////////////
-
-inline int MzcGetLParamX(LPARAM lParam)
-{
-    return static_cast<int>(static_cast<short>(LOWORD(lParam)));
-}
-
-inline int MzcGetLParamY(LPARAM lParam)
-{
-    return static_cast<int>(static_cast<short>(HIWORD(lParam)));
-}
 
 ////////////////////////////////////////////////////////////////////////////
 
