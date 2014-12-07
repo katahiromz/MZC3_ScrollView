@@ -34,6 +34,11 @@ MZC_INLINE MScrollView::MScrollView() : m_hwndParent(NULL)
 {
 }
 
+MZC_INLINE MScrollView::MScrollView(HWND hwndParent) : m_hwndParent(NULL)
+{
+    MScrollView::SetParent(hwndParent);
+}
+
 MZC_INLINE /*virtual*/ MScrollView::~MScrollView()
 {
 }
@@ -47,6 +52,9 @@ MZC_INLINE void MScrollView::SetParent(HWND hwndParent)
 {
     assert(::IsWindow(hwndParent));
     m_hwndParent = hwndParent;
+    DWORD style = ::GetWindowLong(m_hwndParent, GWL_STYLE);
+    style |= WS_CLIPCHILDREN;
+    ::SetWindowLong(m_hwndParent, GWL_STYLE, style);
 }
 
 MZC_INLINE

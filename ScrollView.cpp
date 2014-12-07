@@ -143,7 +143,7 @@ void MScrollView::UpdateScrollInfo()
     if (static_cast<UINT>(si.nMax) < si.nPage)
         ScrollPos().x = 0;
     si.nPos = ScrollPos().x;
-    ::SetScrollInfo(m_hwndParent, SB_HORZ, &si, TRUE);
+    ::SetScrollInfo(m_hwndParent, SB_HORZ, &si, FALSE);
 
     si.cbSize = sizeof(si);
     si.fMask = SIF_ALL | SIF_DISABLENOSCROLL;
@@ -153,7 +153,9 @@ void MScrollView::UpdateScrollInfo()
     if (static_cast<UINT>(si.nMax) < si.nPage)
         ScrollPos().y = 0;
     si.nPos = ScrollPos().y;
-    ::SetScrollInfo(m_hwndParent, SB_VERT, &si, TRUE);
+    ::SetScrollInfo(m_hwndParent, SB_VERT, &si, FALSE);
+
+    ::InvalidateRect(m_hwndParent, NULL, TRUE);
 }
 
 void MScrollView::UpdateCtrlsPos()
@@ -263,7 +265,7 @@ void MScrollView::VScroll(int nSB_, int nPos)
 
 ////////////////////////////////////////////////////////////////////////////
 
-#ifdef UNITTEST
+#ifdef SCROLLVIEW_UNITTEST
     HINSTANCE g_hInstance = NULL;
     HWND g_hMainWnd = NULL;
     MScrollView g_sv;
@@ -419,6 +421,6 @@ void MScrollView::VScroll(int nSB_, int nPos)
         }
         return static_cast<int>(msg.wParam);
     }
-#endif  // def UNITTEST
+#endif  // def SCROLLVIEW_UNITTEST
 
 ////////////////////////////////////////////////////////////////////////////

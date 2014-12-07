@@ -27,6 +27,7 @@ class MScrollView
 {
 public:
     MScrollView();
+    MScrollView(HWND hwndParent);
     virtual ~MScrollView();
 
     // parent
