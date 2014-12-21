@@ -30,11 +30,26 @@ MZC_INLINE MScrollCtrlInfo::MScrollCtrlInfo(
 ////////////////////////////////////////////////////////////////////////////
 // MScrollView
 
-MZC_INLINE MScrollView::MScrollView() : m_hwndParent(NULL)
+MZC_INLINE MScrollView::MScrollView() :
+    m_hwndParent(NULL),
+    m_hHScrollBar(NULL),
+    m_hVScrollBar(NULL)
 {
 }
 
-MZC_INLINE MScrollView::MScrollView(HWND hwndParent) : m_hwndParent(NULL)
+MZC_INLINE MScrollView::MScrollView(HWND hwndParent) :
+    m_hwndParent(NULL),
+    m_hHScrollBar(NULL),
+    m_hVScrollBar(NULL)
+{
+    MScrollView::SetParent(hwndParent);
+}
+
+MZC_INLINE MScrollView::MScrollView(
+    HWND hwndParent, HWND hHScrollBar, HWND hVScrollBar) :
+    m_hwndParent(NULL),
+    m_hHScrollBar(hHScrollBar),
+    m_hVScrollBar(hVScrollBar)
 {
     MScrollView::SetParent(hwndParent);
 }
@@ -57,11 +72,40 @@ MZC_INLINE void MScrollView::SetParent(HWND hwndParent)
     ::SetWindowLong(m_hwndParent, GWL_STYLE, style);
 }
 
-MZC_INLINE
-void MScrollView::ShowParentScrollBars(BOOL fHScroll, BOOL fVScroll)
+MZC_INLINE HWND MScrollView::GetHScrollBarCtrl()
 {
-    ::ShowScrollBar(m_hwndParent, SB_HORZ, fHScroll);
-    ::ShowScrollBar(m_hwndParent, SB_VERT, fVScroll);
+    return m_hHScrollBar;
+}
+
+MZC_INLINE void MScrollView::SetHScrollBarCtrl(HWND hScrollBar)
+{
+    m_hHScrollBar = hScrollBar;
+    ::ShowScrollBar(m_hwndParent, SB_HORZ, !::IsWindow(m_hHScrollBar));
+}
+
+MZC_INLINE HWND MScrollView::GetVScrollBarCtrl()
+{
+    return m_hVScrollBar;
+}
+
+MZC_INLINE void MScrollView::SetVScrollBarCtrl(HWND hScrollBar)
+{
+    m_hVScrollBar = hScrollBar;
+    ::ShowScrollBar(m_hwndParent, SB_VERT, !::IsWindow(m_hVScrollBar));
+}
+
+MZC_INLINE
+void MScrollView::ShowScrollBars(BOOL fHScroll, BOOL fVScroll)
+{
+    if (::IsWindow(m_hHScrollBar))
+        ::ShowScrollBar(m_hHScrollBar, SB_CTL, fHScroll);
+    else
+        ::ShowScrollBar(m_hwndParent, SB_HORZ, fHScroll);
+
+    if (::IsWindow(m_hVScrollBar))
+        ::ShowScrollBar(m_hVScrollBar, SB_CTL, fHScroll);
+    else
+        ::ShowScrollBar(m_hwndParent, SB_VERT, fVScroll);
 }
 
 MZC_INLINE void MScrollView::AddCtrlInfo(HWND hwndCtrl)
@@ -193,6 +237,80 @@ MZC_INLINE const MScrollCtrlInfo& MScrollView::operator[](size_t index) const
 MZC_INLINE void MScrollView::ResetScrollPos()
 {
     ScrollPos() = MPoint();
+}
+
+MZC_INLINE int MScrollView::GetHScrollPos() const
+{
+    if (::IsWindow(m_hHScrollBar)) {
+        return ::GetScrollPos(m_hHScrollBar, SB_CTL);
+    } else {
+        return ::GetScrollPos(m_hwndParent, SB_HORZ);
+    }
+}
+
+MZC_INLINE void MScrollView::SetHScrollPos(int nPos, BOOL bRedraw)
+{
+    if (::IsWindow(m_hHScrollBar)) {
+        ::SetScrollPos(m_hHScrollBar, SB_CTL, nPos, bRedraw);
+    } else {
+        ::SetScrollPos(m_hwndParent, SB_HORZ, nPos, bRedraw);
+    }
+}
+
+MZC_INLINE int MScrollView::GetVScrollPos() const
+{
+    if (::IsWindow(m_hVScrollBar)) {
+        return ::GetScrollPos(m_hVScrollBar, SB_CTL);
+    } else {
+        return ::GetScrollPos(m_hwndParent, SB_VERT);
+    }
+}
+
+MZC_INLINE void MScrollView::SetVScrollPos(int nPos, BOOL bRedraw)
+{
+    if (::IsWindow(m_hVScrollBar)) {
+        ::SetScrollPos(m_hVScrollBar, SB_CTL, nPos, bRedraw);
+    } else {
+        ::SetScrollPos(m_hwndParent, SB_VERT, nPos, bRedraw);
+    }
+}
+
+MZC_INLINE BOOL MScrollView::GetHScrollInfo(LPSCROLLINFO psi) const
+{
+    if (::IsWindow(m_hHScrollBar)) { 
+        return ::GetScrollInfo(m_hHScrollBar, SB_CTL, psi);
+    } else {
+        return ::GetScrollInfo(m_hwndParent, SB_HORZ, psi);
+    }
+}
+
+MZC_INLINE BOOL MScrollView::GetVScrollInfo(LPSCROLLINFO psi) const
+{
+    if (::IsWindow(m_hVScrollBar)) { 
+        return ::GetScrollInfo(m_hVScrollBar, SB_CTL, psi);
+    } else {
+        return ::GetScrollInfo(m_hwndParent, SB_VERT, psi);
+    }
+}
+
+MZC_INLINE BOOL
+MScrollView::SetHScrollInfo(const SCROLLINFO *psi, BOOL bRedraw)
+{
+    if (::IsWindow(m_hHScrollBar)) { 
+        return ::SetScrollInfo(m_hHScrollBar, SB_CTL, psi, bRedraw);
+    } else {
+        return ::SetScrollInfo(m_hwndParent, SB_HORZ, psi, bRedraw);
+    }
+}
+
+MZC_INLINE BOOL
+MScrollView::SetVScrollInfo(const SCROLLINFO *psi, BOOL bRedraw)
+{
+    if (::IsWindow(m_hVScrollBar)) { 
+        return ::SetScrollInfo(m_hVScrollBar, SB_CTL, psi, bRedraw);
+    } else {
+        return ::SetScrollInfo(m_hwndParent, SB_VERT, psi, bRedraw);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////

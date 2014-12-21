@@ -81,11 +81,17 @@ void MScrollView::RemoveCtrlInfo(HWND hwndCtrl)
     }
 }
 
+/*virtual*/ void MScrollView::GetClientRect(LPRECT prcClient) const
+{
+    assert(prcClient);
+    ::GetClientRect(m_hwndParent, prcClient);
+}
+
 // ensure visible
 void MScrollView::EnsureCtrlVisible(HWND hwndCtrl)
 {
     MRect rcClient;
-    ::GetClientRect(m_hwndParent, &rcClient);
+    MScrollView::GetClientRect(&rcClient);
 
     const int siz = static_cast<int>(size());
     for (int i = 0; i < siz; ++i)
@@ -131,7 +137,7 @@ void MScrollView::SetExtentForAllCtrls()
 void MScrollView::UpdateScrollInfo()
 {
     MRect rcClient;
-    ::GetClientRect(m_hwndParent, &rcClient);
+    MScrollView::GetClientRect(&rcClient);
 
     SCROLLINFO si;
 
@@ -143,7 +149,7 @@ void MScrollView::UpdateScrollInfo()
     if (static_cast<UINT>(si.nMax) < si.nPage)
         ScrollPos().x = 0;
     si.nPos = ScrollPos().x;
-    ::SetScrollInfo(m_hwndParent, SB_HORZ, &si, FALSE);
+    SetHScrollInfo(&si, TRUE);
 
     si.cbSize = sizeof(si);
     si.fMask = SIF_ALL | SIF_DISABLENOSCROLL;
@@ -153,7 +159,7 @@ void MScrollView::UpdateScrollInfo()
     if (static_cast<UINT>(si.nMax) < si.nPage)
         ScrollPos().y = 0;
     si.nPos = ScrollPos().y;
-    ::SetScrollInfo(m_hwndParent, SB_VERT, &si, FALSE);
+    SetVScrollInfo(&si, TRUE);
 
     ::InvalidateRect(m_hwndParent, NULL, TRUE);
 }
@@ -182,41 +188,41 @@ void MScrollView::HScroll(int nSB_, int nPos)
     SCROLLINFO si;
     si.cbSize = sizeof(si);
     si.fMask = SIF_ALL;
-    ::GetScrollInfo(m_hwndParent, SB_HORZ, &si);
+    GetHScrollInfo(&si);
 
     switch (nSB_)
     {
     case SB_TOP:
-        ::SetScrollPos(m_hwndParent, SB_HORZ, 0, TRUE);
+        SetHScrollPos(0);
         break;
 
     case SB_BOTTOM:
-        ::SetScrollPos(m_hwndParent, SB_HORZ, si.nMax - si.nPage, TRUE);
+        SetHScrollPos(si.nMax - si.nPage);
         break;
 
     case SB_LINELEFT:
-        ::SetScrollPos(m_hwndParent, SB_HORZ, si.nPos - 16, TRUE);
+        SetHScrollPos(si.nPos - 16);
         break;
 
     case SB_LINERIGHT:
-        ::SetScrollPos(m_hwndParent, SB_HORZ, si.nPos + 16, TRUE);
+        SetHScrollPos(si.nPos + 16);
         break;
 
     case SB_PAGELEFT:
-        ::SetScrollPos(m_hwndParent, SB_HORZ, si.nPos - si.nPage, TRUE);
+        SetHScrollPos(si.nPos - si.nPage);
         break;
 
     case SB_PAGERIGHT:
-        ::SetScrollPos(m_hwndParent, SB_HORZ, si.nPos + si.nPage, TRUE);
+        SetHScrollPos(si.nPos + si.nPage);
         break;
 
     case SB_THUMBPOSITION:
     case SB_THUMBTRACK:
-        ::SetScrollPos(m_hwndParent, SB_HORZ, nPos, TRUE);
+        SetHScrollPos(nPos);
         break;
     }
 
-    ScrollPos().x = ::GetScrollPos(m_hwndParent, SB_HORZ);
+    ScrollPos().x = GetHScrollPos();
     UpdateAll();
 }
 
@@ -225,41 +231,41 @@ void MScrollView::VScroll(int nSB_, int nPos)
     SCROLLINFO si;
     si.cbSize = sizeof(si);
     si.fMask = SIF_ALL;
-    ::GetScrollInfo(m_hwndParent, SB_VERT, &si);
+    GetVScrollInfo(&si);
 
     switch (nSB_)
     {
     case SB_TOP:
-        ::SetScrollPos(m_hwndParent, SB_VERT, 0, TRUE);
+        SetVScrollPos(0);
         break;
 
     case SB_BOTTOM:
-        ::SetScrollPos(m_hwndParent, SB_VERT, si.nMax - si.nPage, TRUE);
+        SetVScrollPos(si.nMax - si.nPage);
         break;
 
     case SB_LINELEFT:
-        ::SetScrollPos(m_hwndParent, SB_VERT, si.nPos - 16, TRUE);
+        SetVScrollPos(si.nPos - 16);
         break;
 
     case SB_LINERIGHT:
-        ::SetScrollPos(m_hwndParent, SB_VERT, si.nPos + 16, TRUE);
+        SetVScrollPos(si.nPos + 16);
         break;
 
     case SB_PAGELEFT:
-        ::SetScrollPos(m_hwndParent, SB_VERT, si.nPos - si.nPage, TRUE);
+        SetVScrollPos(si.nPos - si.nPage);
         break;
 
     case SB_PAGERIGHT:
-        ::SetScrollPos(m_hwndParent, SB_VERT, si.nPos + si.nPage, TRUE);
+        SetVScrollPos(si.nPos + si.nPage);
         break;
 
     case SB_THUMBPOSITION:
     case SB_THUMBTRACK:
-        ::SetScrollPos(m_hwndParent, SB_VERT, nPos, TRUE);
+        SetVScrollPos(nPos);
         break;
     }
 
-    ScrollPos().y = ::GetScrollPos(m_hwndParent, SB_VERT);
+    ScrollPos().y = GetVScrollPos();
     UpdateAll();
 }
 
@@ -274,7 +280,7 @@ void MScrollView::VScroll(int nSB_, int nPos)
     const int c_height = 25;
     bool g_bInited = false;
 
-    static const TCHAR s_szName[] = TEXT("MZC3 ScrollView Test");
+    static const LPCTSTR s_pszName = TEXT("MZC3 ScrollView Test");
 
     void OnSize(HWND hWnd)
     {
@@ -300,7 +306,7 @@ void MScrollView::VScroll(int nSB_, int nPos)
     BOOL OnCreate(HWND hWnd)
     {
         g_sv.SetParent(hWnd);
-        g_sv.ShowParentScrollBars(FALSE, TRUE);
+        g_sv.ShowScrollBars(FALSE, TRUE);
 
         HWND hwndCtrl;
 
@@ -395,13 +401,13 @@ void MScrollView::VScroll(int nSB_, int nPos)
         wc.hCursor = ::LoadCursor(NULL, IDC_ARROW);
         wc.hbrBackground = reinterpret_cast<HBRUSH>(
             static_cast<LONG_PTR>(COLOR_3DFACE + 1));
-        wc.lpszClassName = s_szName;
+        wc.lpszClassName = s_pszName;
         if (!::RegisterClass(&wc))
         {
             return 1;
         }
 
-        g_hMainWnd = ::CreateWindow(s_szName, s_szName,
+        g_hMainWnd = ::CreateWindow(s_pszName, s_pszName,
             WS_OVERLAPPEDWINDOW,
             CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
             NULL, NULL, hInstance, NULL);

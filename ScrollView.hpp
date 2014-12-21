@@ -28,6 +28,7 @@ class MScrollView
 public:
     MScrollView();
     MScrollView(HWND hwndParent);
+    MScrollView(HWND hwndParent, HWND hHScrollBar, HWND hVScrollBar);
     virtual ~MScrollView();
 
     // parent
@@ -35,7 +36,13 @@ public:
     void SetParent(HWND hwndParent);
 
     // parent scroll bars
-    void ShowParentScrollBars(BOOL fHScroll, BOOL fVScroll);
+    void ShowScrollBars(BOOL fHScroll, BOOL fVScroll);
+
+    // scroll bar control
+    HWND GetHScrollBarCtrl();
+    void SetHScrollBarCtrl(HWND hScrollBar);
+    HWND GetVScrollBarCtrl();
+    void SetVScrollBarCtrl(HWND hScrollBar);
 
     // add/set control info
     void AddCtrlInfo(HWND hwndCtrl);
@@ -87,11 +94,27 @@ public:
           MScrollCtrlInfo& operator[](size_t index);
     const MScrollCtrlInfo& operator[](size_t index) const;
 
+    // scroll info
+    BOOL GetHScrollInfo(LPSCROLLINFO psi) const;
+    BOOL GetVScrollInfo(LPSCROLLINFO psi) const;
+    BOOL SetHScrollInfo(const SCROLLINFO *psi, BOOL bRedraw = TRUE);
+    BOOL SetVScrollInfo(const SCROLLINFO *psi, BOOL bRedraw = TRUE);
+
+    // scroll position
+    int  GetHScrollPos() const;
+    void SetHScrollPos(int nPos, BOOL bRedraw = TRUE);
+    int  GetVScrollPos() const;
+    void SetVScrollPos(int nPos, BOOL bRedraw = TRUE);
+
+    virtual void GetClientRect(LPRECT prcClient) const;
+
 protected:
     HWND        m_hwndParent;
     MPoint      m_ptScrollPos;
     MSize       m_sizExtent;
     std::vector<MScrollCtrlInfo> m_vecInfo;
+    HWND        m_hHScrollBar;
+    HWND        m_hVScrollBar;
 
     BOOL HasChildStyle(HWND hwnd) const;
 
