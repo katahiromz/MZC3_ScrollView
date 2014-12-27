@@ -79,7 +79,7 @@ public:
     void SetExtentForAllCtrls();
 
     // ensure visible
-    void EnsureCtrlVisible(HWND hwndCtrl);
+    void EnsureCtrlVisible(HWND hwndCtrl, bool update_all = true);
 
     // update
     void UpdateScrollInfo();

@@ -88,7 +88,7 @@ void MScrollView::RemoveCtrlInfo(HWND hwndCtrl)
 }
 
 // ensure visible
-void MScrollView::EnsureCtrlVisible(HWND hwndCtrl)
+void MScrollView::EnsureCtrlVisible(HWND hwndCtrl, bool update_all/* = true*/)
 {
     MRect rcClient;
     MScrollView::GetClientRect(&rcClient);
@@ -99,8 +99,8 @@ void MScrollView::EnsureCtrlVisible(HWND hwndCtrl)
         if (m_vecInfo[i].m_hwndCtrl != hwndCtrl)
             continue;
 
-        if (!::IsWindowVisible(hwndCtrl))
-            continue;
+        if (!::IsWindow(hwndCtrl))
+            break;
 
         MRect& rcCtrl = m_vecInfo[i].m_rcCtrl;
         if (rcCtrl.bottom > m_ptScrollPos.y + rcClient.Height())
@@ -111,9 +111,10 @@ void MScrollView::EnsureCtrlVisible(HWND hwndCtrl)
         {
             m_ptScrollPos.y = rcCtrl.top;
         }
-        UpdateAll();
         break;
     }
+    if (update_all)
+        UpdateAll();
 }
 
 void MScrollView::SetExtentForAllCtrls()
@@ -177,7 +178,7 @@ void MScrollView::UpdateCtrlsPos()
                 NULL,
                 rcCtrl.left - ScrollPos().x, rcCtrl.top - ScrollPos().y,
                 rcCtrl.Width(), rcCtrl.Height(),
-                SWP_NOACTIVATE | SWP_NOZORDER);
+                SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
         }
         ::EndDeferWindowPos(hDWP);
     }
